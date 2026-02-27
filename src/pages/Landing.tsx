@@ -35,7 +35,7 @@ const Landing = () => {
           transition={{ delay: 0.6, duration: 0.8 }}
           className="text-base sm:text-lg md:text-2xl text-foreground/80 text-center max-w-2xl mb-3 md:mb-4 px-2"
         >
-          This website exists because of you, Vanshu.
+          This website exists because of you.
         </motion.p>
 
         <motion.p

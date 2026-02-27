@@ -1,59 +1,27 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Sparkles, Gem } from 'lucide-react';
+import { Heart, Sparkles, Infinity as InfinityIcon, Star, Gem } from 'lucide-react';
 import PageWrapper from '@/components/PageWrapper';
 import { Button } from '@/components/ui/button';
-
-// --- EFFECTS ---
-const HeartBurst = () => {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-  const spread = isMobile ? 250 : 600;
-  
-  const hearts = Array.from({ length: isMobile ? 25 : 40 }, (_, i) => ({
-    id: i,
-    x: (Math.random() - 0.5) * spread,
-    y: (Math.random() - 0.5) * spread - (Math.random() * 100),
-    scale: 0.5 + Math.random() * 1.5,
-    rotation: Math.random() * 360,
-    delay: Math.random() * 0.2,
-  }));
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
-      {hearts.map((heart) => (
-        <motion.div
-          key={heart.id}
-          initial={{ x: 0, y: 0, scale: 0, opacity: 1 }}
-          animate={{ x: heart.x, y: heart.y, scale: heart.scale, opacity: 0, rotate: heart.rotation }}
-          transition={{ duration: 1.5, delay: heart.delay, ease: "easeOut" }}
-          className="absolute"
-        >
-          <Heart className="w-8 h-8 text-primary fill-primary drop-shadow-xl" />
-        </motion.div>
-      ))}
-    </div>
-  );
-};
+import { Link } from 'react-router-dom';
 
 const Confetti = () => {
-  const confetti = Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 2,
-    duration: 3 + Math.random() * 2,
-    color: ['#a5f3fc', '#bae6fd', '#7dd3fc', '#38bdf8', '#0ea5e9'][Math.floor(Math.random() * 5)],
-  }));
-
+  const confetti = Array.from({ length: 100 });
+  
   return (
-    <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
-      {confetti.map((piece) => (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+      {confetti.map((_, i) => (
         <motion.div
-          key={piece.id}
+          key={i}
           initial={{ y: -20, opacity: 1, rotate: 0 }}
-          animate={{ y: '100vh', opacity: 0, rotate: 720 }}
-          transition={{ duration: piece.duration, delay: piece.delay, repeat: Infinity, ease: "linear" }}
-          className="absolute w-3 h-3"
-          style={{ left: `${piece.left}%`, backgroundColor: piece.color, borderRadius: Math.random() > 0.5 ? '50%' : '2px' }}
+          animate={{ y: '120vh', opacity: [1, 1, 0], rotate: 720 }}
+          transition={{ duration: 4 + Math.random() * 4, delay: -Math.random() * 8, repeat: Infinity, ease: "linear" }}
+          className="absolute w-3 h-3 md:w-4 md:h-4"
+          style={{ 
+            left: `${Math.random() * 100}%`, 
+            backgroundColor: ['#a5f3fc', '#bae6fd', '#7dd3fc', '#38bdf8', '#0ea5e9'][Math.floor(Math.random() * 5)],
+            borderRadius: '2px'
+          }}
         />
       ))}
     </div>
@@ -61,98 +29,223 @@ const Confetti = () => {
 };
 
 const Acceptance = () => {
-  const [accepted, setAccepted] = useState(false);
-  const [showBurst, setShowBurst] = useState(false);
-  const [noBtnPosition, setNoBtnPosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isAccepted, setIsAccepted] = useState(false);
+  const [noBtnPos, setNoBtnPos] = useState({ x: 0, y: 0 });
 
-  const handleNoHover = () => {
-    if (containerRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const newX = Math.random() * (containerRect.width - 150) - (containerRect.width / 2 - 75);
-      const newY = Math.random() * (containerRect.height - 150) - (containerRect.height / 2 - 75);
-      setNoBtnPosition({ x: newX, y: newY });
+  useEffect(() => {
+    if (isAccepted) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+  }, [isAccepted]);
 
-  const handleYes = () => {
-    setShowBurst(true);
-    setTimeout(() => {
-      setAccepted(true);
-      setShowBurst(false);
-    }, 1200);
+  const moveNoButton = () => {
+    const isMobile = window.innerWidth < 640;
+    
+    if (isMobile) {
+      const newX = (Math.random() - 0.5) * 50;
+      const newY = Math.random() * 100 + 50;
+      setNoBtnPos({ x: newX, y: newY });
+    } else {
+      const newX = Math.random() * 300 - 150;
+      const newY = Math.random() * 300 - 150;
+      setNoBtnPos({ x: newX, y: newY });
+    }
   };
 
   return (
     <PageWrapper>
-      {showBurst && <HeartBurst />}
-      {accepted && <Confetti />}
-
-      <div ref={containerRef} className="container mx-auto px-4 min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center relative overflow-hidden">
+      {isAccepted && <Confetti />}
+      
+      <div className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden pb-20 pt-20">
         
-        {/* Ambient Glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-          <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="w-[400px] h-[400px] bg-primary/20 blur-[100px] rounded-full" />
+        {/* Background Elements - Floating Hearts */}
+        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+          <motion.div 
+            animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/4 left-10 text-primary/10"
+          >
+            <Heart className="w-24 h-24 fill-current" />
+          </motion.div>
+          <motion.div 
+            animate={{ y: [0, 30, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-1/3 right-10 text-primary/10"
+          >
+            <Heart className="w-32 h-32 fill-current" />
+          </motion.div>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
         </div>
 
         <AnimatePresence mode="wait">
-          {!accepted ? (
-            <motion.div key="question" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }} className="text-center z-10 max-w-2xl w-full">
-              <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="mb-10 inline-block relative">
-                <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-full animate-pulse" />
-                <Gem className="w-20 h-20 md:w-24 md:h-24 text-primary relative z-10 drop-shadow-2xl" />
+          {!isAccepted ? (
+            <motion.div
+              key="question"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="max-w-2xl w-full text-center space-y-6 md:space-y-8 bg-white/40 backdrop-blur-xl p-6 md:p-12 rounded-[2rem] md:rounded-[3rem] border border-white/60 shadow-2xl relative z-10"
+            >
+              <motion.div 
+                animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="w-20 h-20 md:w-24 md:h-24 mx-auto bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center mb-4 md:mb-6 shadow-inner relative"
+              >
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                <Gem className="w-10 h-10 md:w-12 md:h-12 text-primary relative z-10 drop-shadow-lg" />
               </motion.div>
 
-              <h1 className="romantic-heading text-4xl sm:text-5xl md:text-6xl mb-6 leading-tight">
-                I've made my promises.
+              <h1 className="font-romantic text-3xl sm:text-4xl md:text-6xl text-primary mb-4 md:mb-6 drop-shadow-sm">
+                Vanshu...
               </h1>
-              <p className="font-romantic text-3xl sm:text-4xl md:text-5xl text-primary mb-12 italic">
-                Will you accept this ring, and my heart?
-              </p>
 
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6 relative min-h-[10rem] md:min-h-[6rem]">
-                <Button size="lg" onClick={handleYes} className="text-xl px-10 py-7 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-primary text-primary-foreground z-20">
-                  Yes, I Trust You 💍
+              <div className="space-y-4 md:space-y-6 text-base sm:text-lg md:text-xl text-foreground/80 font-light leading-relaxed">
+                <p>
+                  This isn't just a beautiful piece of jewelry. It is a placeholder for the wedding ring I will one day place on your finger.
+                </p>
+                <p>
+                  This ring is the <span className="font-medium text-primary">proof</span> of my intention. It says that when the time is right, when we are ready, I will marry you.
+                </p>
+                <p>
+                  I am not just asking to be with you for now. I am promising you that my ultimate destination is you. This is my vow to make you my wife one day.
+                </p>
+                <p className="font-romantic text-xl sm:text-2xl md:text-3xl text-primary pt-4 md:pt-6 italic">
+                  Will you accept this ring as my promise to marry you?
+                </p>
+              </div>
+
+              <div className="pt-8 md:pt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 w-full max-w-md sm:max-w-none mx-auto">
+                <Button 
+                  onClick={() => setIsAccepted(true)}
+                  className="bg-primary hover:bg-primary/90 text-white text-lg sm:text-xl h-auto py-4 sm:py-6 px-8 sm:px-12 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 group relative overflow-hidden w-full sm:w-auto min-w-[200px]"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2 sm:gap-3 font-romantic tracking-wide">
+                    <Gem className="w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform" />
+                    Yes, I Accept Your Ring
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Button>
 
                 <motion.div
-                  animate={{ x: noBtnPosition.x, y: noBtnPosition.y }}
+                  animate={{ x: noBtnPos.x, y: noBtnPos.y }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  onHoverStart={handleNoHover}
-                  onClick={handleNoHover}
-                  className="relative md:static z-10"
+                  onHoverStart={moveNoButton}
+                  onClick={moveNoButton}
+                  className="relative w-full sm:w-auto"
                 >
-                  <Button variant="outline" size="lg" className="text-xl px-10 py-7 rounded-full border-2 border-primary/20 bg-background/50 backdrop-blur-sm">
-                    I need time
+                  <Button 
+                    variant="outline" 
+                    className="text-lg sm:text-xl h-auto py-4 sm:py-6 px-8 sm:px-10 rounded-full border-2 border-primary/20 text-primary/60 hover:bg-primary/5 w-full sm:w-auto min-w-[100px]"
+                  >
+                    No
                   </Button>
                 </motion.div>
               </div>
             </motion.div>
-
           ) : (
-            <motion.div key="success" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, type: "spring" }} className="text-center z-10 max-w-2xl">
-              <motion.div animate={{ rotate: [0, 10, -10, 10, 0] }} transition={{ duration: 0.5, delay: 0.2 }} className="mb-8">
-                <Sparkles className="w-24 h-24 text-primary mx-auto drop-shadow-lg" />
-              </motion.div>
-              
-              <h1 className="romantic-heading text-5xl md:text-7xl mb-8 text-primary drop-shadow-sm">
-                Our Forever Begins.
-              </h1>
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="w-full max-w-3xl mx-auto px-4 relative z-10"
+            >
+              <div className="bg-white/60 backdrop-blur-2xl rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-white/50 p-6 md:p-12 overflow-hidden relative">
+                
+                {/* Elegant Top Decoration */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  
+                  {/* Animated Icon */}
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                    className="w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mb-6 md:mb-8 shadow-inner border border-white/50"
+                  >
+                    <Heart className="w-8 h-8 md:w-10 md:h-10 text-primary fill-primary/20" />
+                  </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="romantic-card p-8 md:p-12 mx-auto bg-white/60 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem]">
-                <p className="text-xl sm:text-2xl md:text-3xl text-foreground/90 mb-6 italic font-light leading-relaxed">
-                  "I will spend the rest of my life proving that you made the right choice today."
-                </p>
-                <div className="flex items-center justify-center gap-4">
-                  <div className="h-px w-12 bg-primary/40" />
-                  <Heart className="w-5 h-5 text-primary fill-primary animate-pulse-heart" />
-                  <div className="h-px w-12 bg-primary/40" />
+                  {/* Main Text */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="space-y-2 mb-6 md:mb-8"
+                  >
+                    <p className="text-xs md:text-base font-medium tracking-[0.3em] md:tracking-[0.4em] text-primary/60 uppercase">
+                      A Vow For
+                    </p>
+                    <h2 className="font-romantic text-4xl sm:text-6xl md:text-8xl text-primary drop-shadow-sm leading-none pb-2">
+                      Our Future
+                    </h2>
+                  </motion.div>
+
+                  {/* Divider */}
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: "100px" }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent mb-6 md:mb-8"
+                  />
+                  
+                  {/* Body Text */}
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="space-y-4 md:space-y-6 text-base sm:text-lg md:text-xl text-foreground/80 font-light leading-relaxed max-w-lg"
+                  >
+                    <p>
+                      You hold my word in your hand now. This ring is the physical proof that my heart is waiting for the day we become one.
+                    </p>
+                    <p>
+                      No matter how much time passes, let this be a reminder: You are already chosen. One day, I will make it official before the world.
+                    </p>
+                  </motion.div>
+
+                  {/* Signature / Footer */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-primary/10 w-full flex flex-col items-center gap-2"
+                  >
+                    <p className="text-lg md:text-xl text-foreground/70 italic font-serif tracking-wide">
+                      Eternally Yours,
+                    </p>
+                    <div className="relative mt-2 inline-block">
+                      <p className="font-romantic text-3xl md:text-5xl text-primary">
+                        Prashik
+                      </p>
+                      <motion.div 
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="absolute -right-6 -top-1"
+                      >
+                        <Heart className="w-4 h-4 md:w-5 md:h-5 text-primary fill-primary/30" />
+                      </motion.div>
+                    </div>
+                  </motion.div>
+
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} className="mt-12">
-                <p className="text-2xl text-muted-foreground font-light mb-2">Eternally yours,</p>
-                <p className="font-romantic text-4xl sm:text-5xl md:text-6xl text-primary">Prashik ❤️</p>
+              {/* Navigation */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+                className="mt-8 text-center"
+              >
+                <Link to="/">
+                  <Button variant="ghost" className="rounded-full hover:bg-white/40 text-primary/70 hover:text-primary transition-colors">
+                    Back to Our Story
+                  </Button>
+                </Link>
               </motion.div>
             </motion.div>
           )}
