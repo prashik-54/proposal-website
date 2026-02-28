@@ -7,34 +7,41 @@ const BackgroundMusic = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const audioRef = useRef(null);
 
-  // Smart Auto-Play: Mobile-Optimized Audio Unblocker
+  // Smart Auto-Play: Rock-solid Synchronous Audio Unblocker
   useEffect(() => {
-    const unlockAudio = async () => {
+    const unlockAudio = () => {
       if (!hasInteracted && audioRef.current && audioRef.current.paused) {
-        try {
-          // Attempt to play the audio immediately upon her finger leaving the screen
-          await audioRef.current.play();
-          setIsPlaying(true);
-          setHasInteracted(true);
-        } catch (error) {
-          console.log("Browser blocked auto-play (likely Low Power Mode or strict settings):", error);
+        
+        // 1. SYNCHRONOUS PLAY COMMAND. No 'async/await' allowed here, or iPhones will block it!
+        const playPromise = audioRef.current.play();
+        
+        // 2. Handle the promise after the play command has already been fired
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+              setHasInteracted(true);
+            })
+            .catch((error) => {
+              console.log("Mobile browser requires a deeper click.", error);
+            });
         }
       }
       
-      // Once triggered, instantly remove the listeners so it doesn't fire a million times
-      ['click', 'touchend', 'pointerdown', 'keydown'].forEach(evt => 
-        document.removeEventListener(evt, unlockAudio)
+      // Clean up listeners the second it triggers
+      ['touchstart', 'click', 'keydown'].forEach(evt => 
+        window.removeEventListener(evt, unlockAudio)
       );
     };
 
-    // 'touchend' and 'pointerdown' are the secret keys to unlocking iPhone/Android audio
-    ['click', 'touchend', 'pointerdown', 'keydown'].forEach(evt => 
-      document.addEventListener(evt, unlockAudio, { once: true, passive: true })
+    // Attach to 'window' instead of 'document' to catch touches faster
+    ['touchstart', 'click', 'keydown'].forEach(evt => 
+      window.addEventListener(evt, unlockAudio, { once: true })
     );
     
     return () => {
-      ['click', 'touchend', 'pointerdown', 'keydown'].forEach(evt => 
-        document.removeEventListener(evt, unlockAudio)
+      ['touchstart', 'click', 'keydown'].forEach(evt => 
+        window.removeEventListener(evt, unlockAudio)
       );
     };
   }, [hasInteracted]);
