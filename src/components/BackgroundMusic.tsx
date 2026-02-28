@@ -1,38 +1,43 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Music, Pause, Volume2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Music } from 'lucide-react';
 
 const BackgroundMusic = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const audioRef = useRef(null);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  // This attempts to auto-play the music once the user interacts with the page anywhere
+  // Smart Auto-Play: Waits for ANY interaction on the website to bypass browser auto-play blocks
   useEffect(() => {
     const handleFirstInteraction = () => {
-      if (audioRef.current && audioRef.current.paused) {
+      if (!hasInteracted && audioRef.current && audioRef.current.paused) {
         audioRef.current.play()
-          .then(() => setIsPlaying(true))
-          .catch((error) => console.log("Autoplay prevented by browser until user clicks.", error));
+          .then(() => {
+            setIsPlaying(true);
+            setHasInteracted(true);
+          })
+          .catch((error) => console.log("Autoplay waiting for direct click.", error));
       }
-      // Remove listener after first interaction
+      
+      // Clean up listeners once triggered
       document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
+      document.removeEventListener('scroll', handleFirstInteraction);
     };
 
     document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('touchstart', handleFirstInteraction);
     document.addEventListener('keydown', handleFirstInteraction);
+    document.addEventListener('scroll', handleFirstInteraction);
+    
     return () => {
       document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
+      document.removeEventListener('scroll', handleFirstInteraction);
     };
-  }, []);
+  }, [hasInteracted]);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -42,54 +47,79 @@ const BackgroundMusic = () => {
         audioRef.current.play().catch((e) => console.log("Play failed", e));
       }
       setIsPlaying(!isPlaying);
+      setHasInteracted(true);
     }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[100] group">
-      {/* Put your romantic song in the 'public' folder. 
-        Example: public/our-song.mp3 
-      */}
-      <audio ref={audioRef} src="/our-song.mp3" loop />
+    <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[100]">
+      {/* Make sure 'our-song.mp3' is in your public folder! */}
+      <audio ref={audioRef} src="/our-song.mp3" loop preload="auto" />
       
-      {/* Volume Slider Popup */}
-      <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
-        <div className="bg-white/20 backdrop-blur-md border border-white/40 rounded-2xl p-3 shadow-xl flex flex-col items-center gap-2">
-          <div className="h-24 w-6 flex items-center justify-center relative">
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="absolute w-24 h-1 bg-white/50 rounded-lg appearance-none cursor-pointer accent-primary -rotate-90 origin-center"
-            />
-          </div>
-          <Volume2 className="w-4 h-4 text-primary" />
-        </div>
-      </div>
-
       <motion.button
         onClick={togglePlay}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 1, duration: 0.5, type: "spring" }}
-        whileHover={{ scale: 1.1 }}
+        initial={{ scale: 0, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ delay: 1, duration: 0.8, type: "spring", stiffness: 100 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="relative group flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/40 shadow-xl overflow-hidden"
+        className="relative group flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/70 dark:bg-black/40 backdrop-blur-2xl border border-primary/20 shadow-[0_10px_30px_rgba(201,24,74,0.15)] overflow-hidden focus:outline-none"
       >
         {/* Subtle glowing pulse behind the button when playing */}
-        {isPlaying && (
-          <div className="absolute inset-0 bg-primary/20 animate-ping rounded-full" />
-        )}
-        
-        <div className="relative z-10 text-primary group-hover:text-primary/80 transition-colors">
-          {isPlaying ? (
-            <Pause className="w-5 h-5 md:w-6 md:h-6 fill-current" />
-          ) : (
-            <Music className="w-5 h-5 md:w-6 md:h-6" />
+        <AnimatePresence>
+          {isPlaying && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="absolute inset-0 bg-primary/10 rounded-full animate-pulse" 
+            />
           )}
+        </AnimatePresence>
+        
+        {/* The Audio Visualizer / Icons */}
+        <div className="relative z-10 flex items-center justify-center text-primary transition-colors">
+          <AnimatePresence mode="wait">
+            {isPlaying ? (
+              <motion.div
+                key="playing"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                className="flex items-end justify-center gap-[3px] h-5"
+              >
+                {/* Animated Waveform Bars */}
+                {[1, 2, 3, 4].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ height: ["4px", "16px", "4px"] }}
+                    transition={{ 
+                      duration: 0.8, 
+                      repeat: Infinity, 
+                      delay: i * 0.15, 
+                      ease: "easeInOut" 
+                    }}
+                    className="w-[3px] sm:w-[4px] bg-primary rounded-full origin-bottom"
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="paused"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                className="flex items-center justify-center"
+              >
+                <Music className="w-6 h-6 sm:w-7 sm:h-7 opacity-90 drop-shadow-sm" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Hover Tooltip (Hidden on mobile) */}
+        <div className="absolute right-full mr-4 px-3 py-1.5 rounded-lg bg-background/90 backdrop-blur-md border border-primary/10 text-xs font-medium text-primary whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden sm:block shadow-lg">
+          {isPlaying ? "Pause Song" : "Play Our Song"}
         </div>
       </motion.button>
     </div>

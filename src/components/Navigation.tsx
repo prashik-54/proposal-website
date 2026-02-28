@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Heart, Menu, X, Sparkles } from 'lucide-react';
+import { Heart, Menu, X, Sparkles, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,7 @@ const getGreeting = () => {
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const location = useLocation();
   const { scrollY } = useScroll();
 
@@ -35,9 +36,9 @@ const Navigation = () => {
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
     if (latest > previous && latest > 150) {
-      setIsHidden(true); // Scrolling down
+      setIsHidden(true);
     } else {
-      setIsHidden(false); // Scrolling up
+      setIsHidden(false);
     }
   });
 
@@ -50,6 +51,31 @@ const Navigation = () => {
     }
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
+
+  // Handle Dark Mode Initialization and Local Storage
+  useEffect(() => {
+    const isDarkMode = localStorage.getItem('theme') === 'dark' || 
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    setIsDark(isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (isDark) {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+      setIsDark(false);
+    } else {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      setIsDark(true);
+    }
+  };
 
   return (
     <>
@@ -70,18 +96,17 @@ const Navigation = () => {
               </Link>
             </div>
 
-            {/* Middle/Right: Desktop Links */}
-            <div className="hidden lg:flex items-center justify-center relative z-10">
+            {/* Middle: Desktop Links */}
+            <div className="hidden lg:flex items-center justify-center relative z-10 flex-1 px-4">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
 
-                // Standard Sliding Links for EVERYTHING
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      "relative px-3 xl:px-4 py-2 text-[13px] xl:text-sm font-medium tracking-wide transition-colors duration-300 rounded-full",
+                      "relative px-3 xl:px-4 py-2 text-[13px] xl:text-sm font-medium tracking-wide transition-colors duration-300 rounded-full shrink-0",
                       isActive ? "text-primary-foreground" : "text-foreground/70 hover:text-primary"
                     )}
                   >
@@ -98,23 +123,47 @@ const Navigation = () => {
               })}
             </div>
 
-            {/* Mobile Menu Toggle Button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden relative z-50 p-2 -mr-2 rounded-full text-primary hover:bg-primary/10 transition-colors focus:outline-none"
-            >
-              <AnimatePresence mode="wait">
-                {isOpen ? (
-                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <X className="w-6 h-6" />
-                  </motion.div>
-                ) : (
-                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <Menu className="w-6 h-6" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
+            {/* Right side: Theme Toggle & Mobile Menu */}
+            <div className="flex items-center gap-1 sm:gap-2 relative z-50">
+              
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-foreground/70 hover:text-primary hover:bg-primary/10 transition-colors focus:outline-none"
+                aria-label="Toggle Dark Mode"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {isDark ? (
+                    <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      <Sun className="w-5 h-5" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      <Moon className="w-5 h-5" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+
+              {/* Mobile Menu Toggle Button */}
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="lg:hidden p-2 -mr-2 rounded-full text-primary hover:bg-primary/10 transition-colors focus:outline-none"
+              >
+                <AnimatePresence mode="wait">
+                  {isOpen ? (
+                    <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      <X className="w-6 h-6" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                      <Menu className="w-6 h-6" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            </div>
+
           </nav>
         </div>
       </motion.header>

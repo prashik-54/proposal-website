@@ -1,11 +1,14 @@
-import { motion, MotionProps } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
-interface ScrollRevealProps extends MotionProps {
+// We extend HTMLMotionProps so you can still pass standard Framer Motion props if needed
+interface ScrollRevealProps extends HTMLMotionProps<"div"> {
   children: ReactNode;
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
   delay?: number;
   distance?: number;
+  blurAmount?: string; // Allows you to control the cinematic blur
   className?: string;
 }
 
@@ -14,6 +17,7 @@ const ScrollReveal = ({
   direction = "up", 
   delay = 0, 
   distance = 40,
+  blurAmount = "blur(8px)", // Default to a gorgeous, cinematic soft focus
   className = "",
   ...props
 }: ScrollRevealProps) => {
@@ -30,22 +34,25 @@ const ScrollReveal = ({
     <motion.div
       initial={{ 
         opacity: 0, 
+        filter: blurAmount, // Starts blurred
         ...directions[direction] 
       }}
       whileInView={{ 
         opacity: 1, 
         x: 0, 
-        y: 0 
+        y: 0, 
+        filter: "blur(0px)" // Pulls sharply into focus
       }}
       // margin: "-10%" ensures it triggers perfectly on both mobile and laptop 
       // just before it enters the center of the screen
       viewport={{ once: true, margin: "-10%" }} 
       transition={{ 
-        duration: 0.8, 
+        duration: 0.9, 
         delay: delay, 
-        ease: [0.25, 0.46, 0.45, 0.94] // Premium "easeOut" curve
+        ease: [0.22, 1, 0.36, 1] // The ultra-premium Apple-style deceleration curve
       }}
-      className={className}
+      // Hardware acceleration ensures the blur doesn't stutter on mobile phones
+      className={cn("transform-gpu will-change-[opacity,transform,filter]", className)}
       {...props}
     >
       {children}
