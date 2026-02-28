@@ -7,35 +7,35 @@ const BackgroundMusic = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const audioRef = useRef(null);
 
-  // Smart Auto-Play: Waits for ANY interaction on the website to bypass browser auto-play blocks
+  // Smart Auto-Play: Mobile-Optimized Audio Unblocker
   useEffect(() => {
-    const handleFirstInteraction = () => {
+    const unlockAudio = async () => {
       if (!hasInteracted && audioRef.current && audioRef.current.paused) {
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            setHasInteracted(true);
-          })
-          .catch((error) => console.log("Autoplay waiting for direct click.", error));
+        try {
+          // Attempt to play the audio immediately upon her finger leaving the screen
+          await audioRef.current.play();
+          setIsPlaying(true);
+          setHasInteracted(true);
+        } catch (error) {
+          console.log("Browser blocked auto-play (likely Low Power Mode or strict settings):", error);
+        }
       }
       
-      // Clean up listeners once triggered
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
-      document.removeEventListener('scroll', handleFirstInteraction);
+      // Once triggered, instantly remove the listeners so it doesn't fire a million times
+      ['click', 'touchend', 'pointerdown', 'keydown'].forEach(evt => 
+        document.removeEventListener(evt, unlockAudio)
+      );
     };
 
-    document.addEventListener('click', handleFirstInteraction);
-    document.addEventListener('touchstart', handleFirstInteraction);
-    document.addEventListener('keydown', handleFirstInteraction);
-    document.addEventListener('scroll', handleFirstInteraction);
+    // 'touchend' and 'pointerdown' are the secret keys to unlocking iPhone/Android audio
+    ['click', 'touchend', 'pointerdown', 'keydown'].forEach(evt => 
+      document.addEventListener(evt, unlockAudio, { once: true, passive: true })
+    );
     
     return () => {
-      document.removeEventListener('click', handleFirstInteraction);
-      document.removeEventListener('touchstart', handleFirstInteraction);
-      document.removeEventListener('keydown', handleFirstInteraction);
-      document.removeEventListener('scroll', handleFirstInteraction);
+      ['click', 'touchend', 'pointerdown', 'keydown'].forEach(evt => 
+        document.removeEventListener(evt, unlockAudio)
+      );
     };
   }, [hasInteracted]);
 
