@@ -4,47 +4,29 @@ import { Music } from 'lucide-react';
 
 const BackgroundMusic = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const audioRef = useRef(null);
 
-  // Smart Auto-Play: Rock-solid Synchronous Audio Unblocker
+  // YOUR ORIGINAL, WORKING AUTO-PLAY LOGIC
   useEffect(() => {
-    const unlockAudio = () => {
-      if (!hasInteracted && audioRef.current && audioRef.current.paused) {
-        
-        // 1. SYNCHRONOUS PLAY COMMAND. No 'async/await' allowed here, or iPhones will block it!
-        const playPromise = audioRef.current.play();
-        
-        // 2. Handle the promise after the play command has already been fired
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              setIsPlaying(true);
-              setHasInteracted(true);
-            })
-            .catch((error) => {
-              console.log("Mobile browser requires a deeper click.", error);
-            });
-        }
+    const handleFirstInteraction = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current.play()
+          .then(() => setIsPlaying(true))
+          .catch((error) => console.log("Autoplay prevented by browser until user clicks.", error));
       }
-      
-      // Clean up listeners the second it triggers
-      ['touchstart', 'click', 'keydown'].forEach(evt => 
-        window.removeEventListener(evt, unlockAudio)
-      );
+      // Remove listener after first interaction
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
     };
 
-    // Attach to 'window' instead of 'document' to catch touches faster
-    ['touchstart', 'click', 'keydown'].forEach(evt => 
-      window.addEventListener(evt, unlockAudio, { once: true })
-    );
+    document.addEventListener('click', handleFirstInteraction);
+    document.addEventListener('keydown', handleFirstInteraction);
     
     return () => {
-      ['touchstart', 'click', 'keydown'].forEach(evt => 
-        window.removeEventListener(evt, unlockAudio)
-      );
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('keydown', handleFirstInteraction);
     };
-  }, [hasInteracted]);
+  }, []);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -54,7 +36,6 @@ const BackgroundMusic = () => {
         audioRef.current.play().catch((e) => console.log("Play failed", e));
       }
       setIsPlaying(!isPlaying);
-      setHasInteracted(true);
     }
   };
 
