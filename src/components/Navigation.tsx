@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Heart, Menu, X } from 'lucide-react';
+import { Heart, Menu, X, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -15,70 +16,185 @@ const navItems = [
   { path: '/acceptance', label: 'Acceptance' },
 ];
 
+// Dynamic Greeting Generator for Mobile Menu
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning, my love.";
+  if (hour < 17) return "Good afternoon, beautiful.";
+  if (hour < 21) return "Good evening, Vanshu.";
+  return "Late night thoughts of you, Vanshu.";
+};
+
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const location = useLocation();
+  const { scrollY } = useScroll();
+
+  // Smart Scroll Logic (Hide on scroll down, show on scroll up)
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious();
+    if (latest > previous && latest > 150) {
+      setIsHidden(true); // Scrolling down
+    } else {
+      setIsHidden(false); // Scrolling up
+    }
+  });
+
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-accent/30">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 group">
-            <Heart className="w-6 h-6 text-primary fill-primary animate-pulse-heart" />
-            <span className="font-romantic text-2xl text-primary">Vanshu</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
-                  location.pathname === item.path
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground/70 hover:text-primary hover:bg-accent/50"
-                )}
-              >
-                {item.label}
+    <>
+      {/* The Floating Navigation Bar */}
+      <motion.header 
+        animate={{ y: isHidden ? "-150%" : "0%" }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="fixed top-0 left-0 right-0 z-[60] pt-4 px-4 pointer-events-none"
+      >
+        <div className="container mx-auto max-w-6xl">
+          <nav className="relative flex items-center justify-between h-14 sm:h-16 px-5 sm:px-6 bg-white/70 dark:bg-black/40 backdrop-blur-2xl border border-primary/20 rounded-full shadow-[0_10px_40px_rgba(201,24,74,0.1)] pointer-events-auto transition-all duration-300">
+            
+            {/* Left side: Logo */}
+            <div className="flex items-center gap-3 relative z-10">
+              <Link to="/" className="flex items-center gap-2 group" onClick={() => setIsOpen(false)}>
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary fill-primary group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-romantic text-xl sm:text-2xl text-primary drop-shadow-sm mt-1">Vanshu</span>
               </Link>
-            ))}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-full hover:bg-accent/50 transition-colors"
-          >
-            {isOpen ? <X className="w-6 h-6 text-primary" /> : <Menu className="w-6 h-6 text-primary" />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden py-4 border-t border-accent/30 animate-fade-in-up max-h-[calc(100vh-4rem)] overflow-y-auto">
-            <div className="flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={cn(
-                    "px-4 py-3 rounded-xl text-center font-medium transition-all duration-300",
-                    location.pathname === item.path
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground/70 hover:text-primary hover:bg-accent/50"
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
             </div>
-          </div>
+
+            {/* Middle/Right: Desktop Links */}
+            <div className="hidden lg:flex items-center justify-center relative z-10">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+
+                // Standard Sliding Links for EVERYTHING
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "relative px-3 xl:px-4 py-2 text-[13px] xl:text-sm font-medium tracking-wide transition-colors duration-300 rounded-full",
+                      isActive ? "text-primary-foreground" : "text-foreground/70 hover:text-primary"
+                    )}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-active-pill"
+                        className="absolute inset-0 bg-primary/90 rounded-full -z-10 shadow-[0_0_15px_rgba(201,24,74,0.3)]"
+                        transition={{ type: "spring", stiffness: 70, damping: 15 }}
+                      />
+                    )}
+                    <span className="relative z-10">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="lg:hidden relative z-50 p-2 -mr-2 rounded-full text-primary hover:bg-primary/10 transition-colors focus:outline-none"
+            >
+              <AnimatePresence mode="wait">
+                {isOpen ? (
+                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <X className="w-6 h-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <Menu className="w-6 h-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </nav>
+        </div>
+      </motion.header>
+
+      {/* Cinematic Full-Screen Mobile Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-start pt-24 pb-8 bg-background/95 lg:hidden overflow-hidden"
+          >
+            {/* Decorative background elements */}
+            <div className="absolute top-20 left-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px]" />
+            <div className="absolute bottom-20 right-10 w-40 h-40 bg-accent/20 rounded-full blur-[80px]" />
+            <Sparkles className="absolute top-32 right-12 w-6 h-6 text-primary/30 animate-pulse" />
+            
+            {/* Dynamic Time Greeting */}
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="text-center mb-8 px-6"
+            >
+              <p className="font-romantic text-2xl text-primary drop-shadow-sm">
+                {getGreeting()}
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial="closed" animate="open" exit="closed"
+              variants={{
+                closed: { transition: { staggerChildren: 0.05, staggerDirection: -1 } },
+                open: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } }
+              }}
+              className="flex flex-col items-center gap-3 w-full px-6 overflow-y-auto no-scrollbar flex-1 pb-10"
+            >
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <motion.div 
+                    key={item.path} 
+                    variants={{ closed: { opacity: 0, y: 20 }, open: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} 
+                    className="w-full max-w-xs"
+                  >
+                    <Link
+                      to={item.path}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        "block w-full text-center px-6 py-4 rounded-2xl text-lg sm:text-xl font-medium tracking-wide transition-all duration-300",
+                        isActive ? "bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 scale-105" : 
+                        "bg-white/5 dark:bg-white/5 text-foreground/80 hover:bg-primary/10 hover:text-primary border border-white/10"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+
+            {/* Mobile Footer Signature */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 1 }}
+              className="flex items-center justify-center gap-2 text-xs font-mono tracking-[0.2em] text-muted-foreground/50 uppercase shrink-0 mt-4"
+            >
+              <span>Vanshu</span>
+              <Heart className="w-3 h-3 text-primary/50 fill-primary/30 animate-pulse-heart" />
+              <span>Prashik</span>
+            </motion.div>
+            
+          </motion.div>
         )}
-      </div>
-    </nav>
+      </AnimatePresence>
+    </>
   );
 };
 
