@@ -32,9 +32,19 @@ const Navigation = () => {
   const location = useLocation();
   const { scrollY } = useScroll();
 
-  // Smart Scroll Logic (Hide on scroll down, show on scroll up)
+  // Smart Scroll Logic (Upgraded for Mobile)
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious();
+    // FIX 1: Never hide the navbar if the mobile menu is open!
+    if (isOpen) {
+      setIsHidden(false);
+      return;
+    }
+
+    const previous = scrollY.getPrevious() ?? 0;
+    
+    // FIX 2: Ignore iOS elastic "bounce" scrolling at the very top of the screen
+    if (latest < 0) return;
+
     if (latest > previous && latest > 150) {
       setIsHidden(true);
     } else {
@@ -46,10 +56,17 @@ const Navigation = () => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Extra safety for iOS Safari
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
     }
-    return () => { document.body.style.overflow = 'unset'; };
+    return () => { 
+      document.body.style.overflow = 'unset'; 
+      document.body.style.position = 'static';
+    };
   }, [isOpen]);
 
   // Handle Dark Mode Initialization and Local Storage
@@ -176,7 +193,8 @@ const Navigation = () => {
             animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-start pt-24 pb-8 bg-background/95 lg:hidden overflow-hidden"
+            /* FIX 3: Changed to top-0 left-0 w-full h-[100dvh] and added overscroll-none */
+            className="fixed top-0 left-0 w-full h-[100dvh] z-50 flex flex-col items-center justify-start pt-24 pb-8 bg-background/95 lg:hidden overflow-hidden overscroll-none"
           >
             {/* Decorative background elements */}
             <div className="absolute top-20 left-10 w-40 h-40 bg-primary/20 rounded-full blur-[80px]" />
@@ -188,7 +206,7 @@ const Navigation = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="text-center mb-8 px-6"
+              className="text-center mb-6 px-6 shrink-0"
             >
               <p className="font-romantic text-2xl text-primary drop-shadow-sm">
                 {getGreeting()}
@@ -201,7 +219,8 @@ const Navigation = () => {
                 closed: { transition: { staggerChildren: 0.05, staggerDirection: -1 } },
                 open: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } }
               }}
-              className="flex flex-col items-center gap-3 w-full px-6 overflow-y-auto no-scrollbar flex-1 pb-10"
+              /* FIX 4: Added overscroll-contain to make inner scrolling perfectly smooth */
+              className="flex flex-col items-center gap-3 w-full px-6 overflow-y-auto no-scrollbar flex-1 pb-10 overscroll-contain"
             >
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -210,7 +229,7 @@ const Navigation = () => {
                   <motion.div 
                     key={item.path} 
                     variants={{ closed: { opacity: 0, y: 20 }, open: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }} 
-                    className="w-full max-w-xs"
+                    className="w-full max-w-xs shrink-0"
                   >
                     <Link
                       to={item.path}
@@ -233,7 +252,7 @@ const Navigation = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 1 }}
-              className="flex items-center justify-center gap-2 text-xs font-mono tracking-[0.2em] text-muted-foreground/50 uppercase shrink-0 mt-4"
+              className="flex items-center justify-center gap-2 text-xs font-mono tracking-[0.2em] text-muted-foreground/50 uppercase shrink-0 mt-4 pb-4"
             >
               <span>Vanshu</span>
               <Heart className="w-3 h-3 text-primary/50 fill-primary/30 animate-pulse-heart" />
