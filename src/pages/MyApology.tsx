@@ -126,7 +126,7 @@ export default function MyApology() {
                       onClick={() => {
                         setShowForgiveMessage(true);
                         setShowMadMessage(false);
-                        setTimeout(() => navigate('/'), 7000); 
+                        setTimeout(() => navigate('/'), 15000); 
                       }}
                       className="h-14 px-8 text-base bg-slate-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-slate-950 dark:hover:bg-white hover:shadow-lg dark:hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] transition-all duration-500 rounded-full"
                     >
