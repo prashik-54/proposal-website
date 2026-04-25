@@ -156,7 +156,7 @@ export default function MyApology() {
                           exit={{ opacity: 0 }}
                           className="text-base md:text-lg text-slate-800 dark:text-zinc-200 font-medium leading-relaxed"
                         >
-                          Thank you for your grace, and for not giving up on us even when I made it hard. I love you so much. ❤️ <br/><span className="text-sm font-light opacity-70 mt-2 block">(Taking you back home...)</span>
+                          Thank you for your grace, and for holding onto us even when my overthinking made it so incredibly hard. I love you so much, Vanshu. I love you more than you could ever imagine, till my last breath, for infinity, and forever. You are the absolute best part of my life, and I am so unbelievably lucky that you are mine. ❤️ <br/><span className="text-sm font-light opacity-70 mt-2 block">(Taking you back home...)</span>
                         </motion.p>
                       )}
                     </AnimatePresence>
