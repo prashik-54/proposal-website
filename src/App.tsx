@@ -18,6 +18,7 @@ import TheRing from "./pages/TheRing";
 import MyPromise from "./pages/MyPromise";
 import Acceptance from "./pages/Acceptance";
 import NotFound from "./pages/NotFound";
+import MyApology from "./pages/MyApology";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const AnimatedRoutes = () => {
         <Route path="/the-ring" element={<PageTransition><TheRing /></PageTransition>} />
         <Route path="/my-promise" element={<PageTransition><MyPromise /></PageTransition>} />
         <Route path="/acceptance" element={<PageTransition><Acceptance /></PageTransition>} />
+        <Route path="/my-apology" element={<MyApology />} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

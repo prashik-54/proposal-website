@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Infinity as InfinityIcon, Sun, CloudRain, Star, Sparkles } from 'lucide-react';
 import PageWrapper from '@/components/PageWrapper';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const promises = [
@@ -10,38 +10,52 @@ const promises = [
     icon: Sun, 
     title: "I choose you on the brightest days.", 
     description: "When we are laughing until we can't breathe, when everything feels easy, and the world is just ours to enjoy.",
-    glow: "group-hover:shadow-[0_0_40px_rgba(201,24,74,0.15)]" // Soft primary glow
+    glow: "group-hover:shadow-[0_0_40px_rgba(201,24,74,0.15)]" 
   },
   { 
     icon: CloudRain, 
     title: "I choose you on the heaviest days.", 
     description: "When the storms come, when we are tired, stressed, or frustrated. Love isn't about running when it gets hard. It's about holding your hand tighter in the dark.",
-    glow: "group-hover:shadow-[0_0_40px_rgba(201,24,74,0.25)]" // Deeper primary glow
+    glow: "group-hover:shadow-[0_0_40px_rgba(201,24,74,0.25)]" 
   },
   { 
     icon: Star, 
     title: "I choose you in every lifetime.", 
     description: "You are not just a passing chapter in my story. You are the constellation my entire world revolves around. Today, tomorrow, and always.",
-    glow: "group-hover:shadow-[0_0_40px_rgba(255,143,171,0.2)]" // Accent glow
+    glow: "group-hover:shadow-[0_0_40px_rgba(255,143,171,0.2)]" 
   },
 ];
 
 const Forever = () => {
+  // All hooks merged together at the top level
+  const navigate = useNavigate();
   const [showTypewriter, setShowTypewriter] = useState(false);
+  const [heartClicks, setHeartClicks] = useState(0);
 
   useEffect(() => {
-    // Reduced from 3.5s to 1.8s for a much more natural, conversational pacing
     const timer = setTimeout(() => {
       setShowTypewriter(true);
     }, 1800);
     return () => clearTimeout(timer);
   }, []);
 
+  // Secret Click Logic
+  const handleSecretClick = () => {
+    const newCount = heartClicks + 1;
+    setHeartClicks(newCount);
+    
+    // On the 3rd click, navigate to the hidden page
+    if (newCount === 3) {
+      navigate('/my-apology');
+      setHeartClicks(0); 
+    }
+  };
+
   return (
     <PageWrapper>
       <div className="container mx-auto px-4 max-w-4xl relative overflow-hidden pb-24 md:overflow-visible">
         
-        {/* Giant Ambient Infinity Background - Hardware Accelerated for Mobile */}
+        {/* Giant Ambient Infinity Background */}
         <div className="absolute inset-0 pointer-events-none -z-10 flex justify-center items-center opacity-[0.03] overflow-hidden">
           <motion.div
             animate={{ rotate: 360, scale: [1, 1.05, 1] }}
@@ -52,7 +66,7 @@ const Forever = () => {
           </motion.div>
         </div>
 
-        {/* Hero Section - Reduced top padding, unified global heading */}
+        {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,7 +82,6 @@ const Forever = () => {
             <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
           </motion.div>
           
-          {/* Globally matched heading style */}
           <h1 className="romantic-heading text-5xl sm:text-6xl md:text-7xl mb-4 md:mb-6 bg-gradient-to-br from-primary via-foreground to-primary bg-clip-text text-transparent drop-shadow-sm">
             Forever Means You
           </h1>
@@ -77,7 +90,7 @@ const Forever = () => {
           </p>
         </motion.div>
 
-        {/* The Expanded Promises - Improved Glassmorphism for Mobile */}
+        {/* The Expanded Promises */}
         <div className="flex flex-col gap-6 md:gap-8 mb-16 md:mb-24 relative z-10">
           {promises.map((promise, index) => (
             <motion.div
@@ -116,9 +129,13 @@ const Forever = () => {
           <div className="bg-white/60 dark:bg-black/30 backdrop-blur-2xl border border-primary/10 shadow-xl p-8 sm:p-10 md:p-14 rounded-[2.5rem] inline-block max-w-2xl w-full relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
             
-            <Heart className="w-10 h-10 text-primary fill-primary mx-auto mb-6 sm:mb-8 animate-pulse-heart drop-shadow-md relative z-10" />
+            {/* The Trick is here! */}
+            <Heart 
+              className="w-8 h-8 text-red-500 mx-auto mb-4 cursor-pointer hover:scale-110 transition-transform" 
+              fill="currentColor"
+              onClick={handleSecretClick} 
+            />
             
-            {/* Dynamic height container so text doesn't clip on small screens */}
             <div className="min-h-[4rem] sm:min-h-[5rem] flex items-center justify-center relative z-10">
               <AnimatePresence mode="wait">
                 {showTypewriter ? (
@@ -152,7 +169,7 @@ const Forever = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.5, duration: 1 }} // Triggered right after typing finishes
+          transition={{ delay: 2.5, duration: 1 }} 
           className="text-center relative z-10 px-4"
         >
           <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary/40 mx-auto mb-4 sm:mb-6 animate-pulse" />
