@@ -61,7 +61,7 @@ export default function MyApology() {
                     "I know you told me to leave you alone, and I completely respect it if you don't even want to look at this right now."
                   </p>
                   <p className="text-xl md:text-2xl font-medium text-slate-800 dark:text-zinc-300 transition-colors duration-1000">
-                    But I couldn't just stay quiet without owning up to how badly I messed up.
+                    I couldn’t stay quiet—I had to own up to my mistake and take full responsibility for how I made you feel. I want to say sorry in the most sincere way possible, and I hope that when you're ready, we can talk about it. But for now, I just want to say this:
                   </p>
                 </motion.div>
 
