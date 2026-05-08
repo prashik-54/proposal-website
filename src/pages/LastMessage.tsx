@@ -1,31 +1,40 @@
-// src/pages/LastMessage.tsx
 import { motion } from "framer-motion";
 
 const LastMessage = () => {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-xl shadow-2xl"
+        transition={{ duration: 1 }}
+        className="max-w-lg w-full bg-zinc-950 border border-zinc-900 p-10 rounded-2xl shadow-2xl"
       >
-        <h1 className="text-2xl font-semibold text-slate-200 mb-6 tracking-wide">
+        <h1 className="text-2xl font-light text-zinc-300 mb-8 tracking-widest">
           To Vanshu,
         </h1>
         
-        <div className="space-y-6 text-slate-400 text-sm md:text-base leading-relaxed">
+        <div className="space-y-6 text-zinc-400 text-sm md:text-base font-light leading-relaxed text-left">
           <p>
-            I put a lot of time, thought, and heart into the efforts I make for you. When those efforts are dismissed or deleted without a second thought, it shows me that they aren't valued.
+            I always try to do special things for you because I care about you. Whether it is creating pictures for you, making stories, or building this website, I put my heart and time into it just to see you happy.
           </p>
           
           <p>
-            This page is to let you know that this is my last effort. From today onwards, I am stepping back. I cannot keep pouring my energy into things that are not appreciated or respected.
+            But when you delete the things I make with so much love, just because you are angry at someone else, it hurts me deeply. It makes me feel like my feelings and my hard work have zero value to you. 
           </p>
 
-          <p className="pt-4 border-t border-slate-800 text-slate-500 italic">
-            There is nothing else to see here.
+          <p>
+            It is very heavy to keep giving your best to someone who does not appreciate it. I cannot keep pouring my love and energy into things that are thrown away so easily. 
           </p>
+
+          <p>
+            So, I am making a hard choice today. This is the very last effort I will make for you. From today onwards, I am stepping back. I will not put my time or feelings into making anything special anymore, because it is clear that you do not value it.
+          </p>
+
+          <div className="pt-8 mt-8 border-t border-zinc-900 text-center">
+            <p className="text-zinc-600 italic text-sm">
+              There is nothing else left to see here.
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>
