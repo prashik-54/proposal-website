@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +21,15 @@ import Acceptance from "./pages/Acceptance";
 import NotFound from "./pages/NotFound";
 import MyApology from "./pages/MyApology";
 
+// IMPORT YOUR NEW PAGE
+import LastMessage from "./pages/LastMessage";
+
 const queryClient = new QueryClient();
+
+// ==========================================
+// 🔴 THE SWITCH: Change to 'false' to restore the original website
+const SHOW_LAST_MESSAGE = true; 
+// ==========================================
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -44,21 +53,29 @@ const AnimatedRoutes = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-romantic-gradient">
-          <Navigation />
-          <GlobalBackground />
-          <BackgroundMusic />
-          <AnimatedRoutes />
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // If the switch is true, ONLY show the message page. No navigation, no music.
+  if (SHOW_LAST_MESSAGE) {
+    return <LastMessage />;
+  }
+
+  // Otherwise, load the normal website
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen bg-romantic-gradient">
+            <Navigation />
+            <GlobalBackground />
+            <BackgroundMusic />
+            <AnimatedRoutes />
+          </div>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
