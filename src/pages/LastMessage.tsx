@@ -31,7 +31,7 @@ const LastMessage = () => {
           </p>
 
           <p>
-            It physically hurts to know that the ring I gave you, which held all my love and hopes, will soon be taken off your finger and replaced by his. When you left, you simply told me that what happened between us was just "normal," that it didn't mean much, and that I should just move on like it was nothing. But Vanshu, for me, nothing about us was normal. I took every single late-night talk, every dream of the future family we named, and every promise completely seriously. I gave you my entire soul with a pure, honest heart.
+            It hurts so much to know that the ring I gave you, which held all my love and hopes, will soon be taken off your finger and replaced by his. When you left, you simply told me that what happened between us was just "normal," that it didn't mean much, and that I should just move on like it was nothing. But Vanshu, for me, nothing about us was normal. I took every single late-night talk, every dream of the future family we named, and every promise completely seriously. I gave you my entire soul with a pure, honest heart.
           </p>
 
           <p>
