@@ -28,7 +28,7 @@ const queryClient = new QueryClient();
 
 // ==========================================
 // 🔴 THE SWITCH: Change to 'false' to restore the original website
-const SHOW_LAST_MESSAGE = true; 
+const SHOW_LAST_MESSAGE = false; 
 // ==========================================
 
 const AnimatedRoutes = () => {
